@@ -1,0 +1,467 @@
+/* Reset and base styles */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", sans-serif;
+  background-color: #f8f9fa;
+  color: #333;
+  line-height: 1.5;
+}
+
+.app {
+  min-height: 100vh;
+}
+
+/* Login styles */
+.login-container {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.login-card {
+  background: white;
+  padding: 2rem;
+  border-radius: 12px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  text-align: center;
+  min-width: 300px;
+}
+
+.login-btn {
+  background: #1a73e8;
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  margin-top: 1rem;
+}
+
+.login-btn:hover {
+  background: #1557b0;
+}
+
+/* Dashboard layout */
+.dashboard {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Header */
+.header {
+  background: white;
+  border-bottom: 1px solid #e5e7eb;
+  padding: 0 2rem;
+}
+
+.header-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 64px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.logo-icon {
+  width: 32px;
+  height: 32px;
+  background: #1a73e8;
+  color: white;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 18px;
+}
+
+.logo-text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+}
+
+.logo-main {
+  font-size: 20px;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.logo-sub {
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.header-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.header-btn {
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: 1px solid transparent;
+}
+
+.header-btn.secondary {
+  background: #f3f4f6;
+  color: #374151;
+  border-color: #d1d5db;
+}
+
+.header-btn.secondary:hover {
+  background: #e5e7eb;
+}
+
+.header-btn.primary {
+  background: #1a73e8;
+  color: white;
+}
+
+.header-btn.primary:hover {
+  background: #1557b0;
+}
+
+/* Main content */
+.main-content {
+  display: flex;
+  flex: 1;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 2rem;
+  gap: 2rem;
+}
+
+/* Sidebar */
+.sidebar {
+  width: 320px;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.profile-card,
+.mfa-card {
+  background: white;
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.profile-avatar {
+  width: 80px;
+  height: 80px;
+  margin: 0 auto 1rem;
+  border-radius: 50%;
+  overflow: hidden;
+}
+
+.profile-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.profile-name {
+  font-size: 18px;
+  font-weight: 600;
+  text-align: center;
+  margin-bottom: 0.5rem;
+}
+
+.profile-email {
+  color: #6b7280;
+  text-align: center;
+  margin-bottom: 1rem;
+  font-size: 14px;
+}
+
+.view-info-btn {
+  background: none;
+  border: none;
+  color: #1a73e8;
+  cursor: pointer;
+  font-size: 14px;
+  text-decoration: underline;
+  margin-bottom: 1.5rem;
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.wallet-address {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: #f3f4f6;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-family: monospace;
+  font-size: 14px;
+}
+
+.copy-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #6b7280;
+  padding: 2px;
+}
+
+.copy-btn:hover {
+  color: #1a73e8;
+}
+
+/* MFA Card */
+.mfa-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.mfa-header h4 {
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.mfa-status {
+  font-size: 12px;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-weight: 500;
+}
+
+.mfa-status.disabled {
+  background: #fef2f2;
+  color: #dc2626;
+}
+
+.mfa-status.enabled {
+  background: #f0fdf4;
+  color: #16a34a;
+}
+
+.mfa-description {
+  font-size: 14px;
+  color: #6b7280;
+  margin-bottom: 1rem;
+  line-height: 1.5;
+}
+
+.mfa-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #f3f4f6;
+  border: 1px solid #d1d5db;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.mfa-btn:hover {
+  background: #e5e7eb;
+}
+
+/* Content area */
+.content {
+  flex: 1;
+}
+
+.services-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.5rem;
+}
+
+.service-card {
+  background: white;
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+}
+
+.service-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.service-header h3 {
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.service-header p {
+  color: #6b7280;
+  font-size: 14px;
+}
+
+.service-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.wallet-icon {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.wallet-graphic {
+  width: 24px;
+  height: 24px;
+  background: white;
+  border-radius: 4px;
+  opacity: 0.9;
+}
+
+.service-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-top: auto;
+}
+
+.service-btn {
+  padding: 10px 16px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  background: white;
+  color: #374151;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-align: center;
+}
+
+.service-btn:hover {
+  background: #f9fafb;
+  border-color: #9ca3af;
+}
+
+.service-btn.primary {
+  background: #1a73e8;
+  color: white;
+  border-color: #1a73e8;
+}
+
+.service-btn.primary:hover {
+  background: #1557b0;
+  border-color: #1557b0;
+}
+
+.service-btn.large {
+  padding: 12px 24px;
+  font-size: 16px;
+}
+
+.nft-preview {
+  margin: 1rem 0;
+  text-align: center;
+}
+
+.nft-preview img {
+  width: 200px;
+  height: 200px;
+  border-radius: 12px;
+  object-fit: cover;
+}
+
+.demo-text {
+  margin-top: 1rem;
+  font-size: 14px;
+  color: #6b7280;
+  text-align: center;
+}
+
+.link {
+  color: #1a73e8;
+  text-decoration: none;
+}
+
+.link:hover {
+  text-decoration: underline;
+}
+
+.loading {
+  color: #1a73e8;
+  text-align: center;
+  padding: 1rem;
+}
+
+.error {
+  color: #dc2626;
+  text-align: center;
+  padding: 1rem;
+}
+
+/* Responsive design */
+@media (max-width: 1024px) {
+  .main-content {
+    flex-direction: column;
+    padding: 1rem;
+  }
+
+  .sidebar {
+    width: 100%;
+  }
+
+  .services-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .header-content {
+    padding: 0 1rem;
+  }
+
+  .header-actions {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .header-btn {
+    font-size: 12px;
+    padding: 6px 12px;
+  }
+
+  .logo-main {
+    font-size: 18px;
+  }
+}
