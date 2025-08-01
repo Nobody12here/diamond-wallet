@@ -1,99 +1,158 @@
-import "./App.css";
-import { useWeb3AuthConnect, useWeb3AuthDisconnect, useWeb3AuthUser } from "@web3auth/modal/react";
-// IMP START - Blockchain Calls  
-import { useAccount } from "wagmi";
-import { SendTransaction } from "./components/sendTransaction";
-import { Balance } from "./components/getBalance";
-import { SwitchChain } from "./components/switchNetwork";
-// IMP END - Blockchain Calls
-function App() {
-  // IMP START - Login  
-  const { connect, isConnected, connectorName, loading: connectLoading, error: connectError } = useWeb3AuthConnect();
-  // IMP END - Login
-  // IMP START - Logout
-  const { disconnect, loading: disconnectLoading, error: disconnectError } = useWeb3AuthDisconnect();
-  // IMP END - Logout
-  const { userInfo } = useWeb3AuthUser();
-  // IMP START - Blockchain Calls
-  const { address } = useAccount();
-  // IMP END - Blockchain Calls
+"use client"
 
-  function uiConsole(...args: any[]): void {
-    const el = document.querySelector("#console>p");
-    if (el) {
-      el.innerHTML = JSON.stringify(args || {}, null, 2);
-      console.log(...args);
-    }
+import "./App.css"
+import { useEffect, useState } from "react"
+import { useWeb3AuthConnect, useWeb3AuthDisconnect } from "@web3auth/modal/react"
+import { useAccount } from "wagmi"
+import { SendTransaction } from "./components/sendTransaction"
+import { Balance } from "./components/getBalance"
+import { SwitchChain } from "./components/switchNetwork"
+import { useWalletUI, useWeb3AuthUser } from "@web3auth/modal/react"
+import { Copy, Shield } from "lucide-react"
+
+function App() {
+  const { connect, isConnected, connectorName, loading: connectLoading, error: connectError } = useWeb3AuthConnect()
+  const { disconnect, loading: disconnectLoading, error: disconnectError } = useWeb3AuthDisconnect()
+  const { showWalletUI, loading, error } = useWalletUI()
+  const { address } = useAccount()
+  const { userInfo } = useWeb3AuthUser()
+  const [autoLoginTriggered, setAutoLoginTriggered] = useState(false)
+  const [mfaEnabled, setMfaEnabled] = useState(false)
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (!isConnected && !connectLoading && !connectError && !autoLoginTriggered) {
+        connect()
+        setAutoLoginTriggered(true)
+      }
+    }, 1000)
+
+    return () => clearTimeout(timer)
+  }, [isConnected, connectLoading, connectError, connect, autoLoginTriggered])
+
+  const copyToClipboard = (text: string) => {
+    navigator.clipboard.writeText(text)
+  }
+
+  const formatAddress = (addr: string) => {
+    if (!addr) return ""
+    return `${addr.slice(0, 6)}....${addr.slice(-6)}`
   }
 
   const loggedInView = (
-    <div className="grid">
-      <h2>Connected to {connectorName}</h2>
-      {/* // IMP START - Blockchain Calls */}
-      <div>{address}</div>
-      {/* // IMP END - Blockchain Calls */}
-      <div className="flex-container">
-        <div>
-          <button onClick={() => uiConsole(userInfo)} className="card">
-            Get User Info
-          </button>
+    <div className="dashboard">
+      {/* Header */}
+      <header className="header">
+        <div className="header-content">
+          <div className="logo">
+            <div className="logo-icon">W</div>
+            <div className="logo-text">
+              <span className="logo-main">web3auth</span>
+              <span className="logo-sub">by MetaMask</span>
+            </div>
+          </div>
+          <div className="header-actions">
+
+            <button onClick={() => disconnect()} className="header-btn primary">
+              Logout
+            </button>
+          </div>
         </div>
-        {/* // IMP START - Logout */}
-        <div>
-          <button onClick={() => disconnect()} className="card">
-            Log Out
-          </button>
-          {disconnectLoading && <div className="loading">Disconnecting...</div>}
-          {disconnectError && <div className="error">{disconnectError.message}</div>}
-        </div>
-        {/* // IMP END - Logout */}
+      </header>
+
+      {/* Main Content */}
+      <div className="main-content">
+        {/* Sidebar */}
+        <aside className="sidebar">
+          <div className="profile-card">
+            <div className="profile-avatar">
+              <img src={userInfo?.profileImage} alt="Profile" />
+            </div>
+            <h3 className="profile-name">{userInfo?.name}</h3>
+            <p className="profile-email">{userInfo?.email}</p>
+
+
+            <div className="wallet-address">
+              <span className="address-text">{formatAddress(address || "")}</span>
+              <button onClick={() => copyToClipboard(address || "")} className="copy-btn">
+                <Copy size={16} />
+              </button>
+            </div>
+          </div>
+
+
+        </aside>
+
+        {/* Content Area */}
+        <main className="content">
+          <div className="services-grid">
+            {/* Wallet Services */}
+            <div className="service-card">
+              <div className="service-header">
+                <div className="service-icon wallet-icon">
+                  <div className="wallet-graphic"></div>
+                </div>
+                <div>
+                  <h3>Wallet Services</h3>
+                  <p>Production-ready wallet UI</p>
+                </div>
+              </div>
+              <div className="service-actions">
+                <button onClick={() => showWalletUI()} className="service-btn">
+                  Open Wallet UI
+                </button>
+                {/* <button className="service-btn">Use Fiat Onramp</button>
+                <button className="service-btn">Connect to Applications</button>
+                <button className="service-btn">Swap</button>
+                <button className="service-btn">Sign Personal Message</button> */}
+              </div>
+            </div>
+
+
+          </div>
+
+          {/* Hidden components for functionality */}
+          <div style={{ display: "none" }}>
+            <SendTransaction />
+            <Balance />
+            <SwitchChain />
+          </div>
+        </main>
       </div>
-      {/* IMP START - Blockchain Calls */}
-      <SendTransaction />
-      <Balance />
-      <SwitchChain />
-      {/* IMP END - Blockchain Calls */}
     </div>
-  );
+  )
 
   const unloggedInView = (
-    // IMP START - Login  
-    <div className="grid">
-      <button onClick={() => connect()} className="card">
-        Login
-      </button>
-      {connectLoading && <div className="loading">Connecting...</div>}
-      {connectError && <div className="error">{connectError.message}</div>}
-    </div>
-    // IMP END - Login
-
-  );
-
-  return (
-    <div className="container">
-      <h1 className="title">
-        <a target="_blank" href="https://web3auth.io/docs/sdk/pnp/web/modal" rel="noreferrer">
-          Web3Auth{" "}
-        </a>
-        & React Modal Quick Start
-      </h1>
-
-      {isConnected ? loggedInView : unloggedInView}
-      <div id="console" style={{ whiteSpace: "pre-line" }}>
-        <p style={{ whiteSpace: "pre-line" }}></p>
+    <div className="login-container">
+      <div className="login-card">
+        <div className="logo">
+          <div className="logo-icon">W</div>
+          <div className="logo-text">
+            <span className="logo-main">web3auth</span>
+            <span className="logo-sub">by MetaMask</span>
+          </div>
+        </div>
+        {connectLoading ? (
+          <div className="loading">Opening login modal...</div>
+        ) : connectError ? (
+          <div>
+            <div className="error">{connectError.message}</div>
+            <button onClick={() => connect()} className="login-btn">
+              Retry Login
+            </button>
+          </div>
+        ) : !autoLoginTriggered ? (
+          <div className="loading">Preparing login...</div>
+        ) : (
+          <button onClick={() => connect()} className="login-btn">
+            Login with Web3Auth
+          </button>
+        )}
       </div>
-
-      <footer className="footer">
-        <a
-          href="https://github.com/Web3Auth/web3auth-examples/tree/main/quick-starts/react-quick-start"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Source code
-        </a>
-      </footer>
     </div>
-  );
+  )
+
+  return <div className="app">{isConnected ? loggedInView : unloggedInView}</div>
 }
 
-export default App;
+export default App
