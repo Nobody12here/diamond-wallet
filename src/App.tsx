@@ -1,6 +1,7 @@
 "use client"
 
 import "./App.css"
+import diora from "./assets/diora.png";
 import { useEffect, useState } from "react"
 import { useWeb3AuthConnect, useWeb3AuthDisconnect } from "@web3auth/modal/react"
 import { useAccount } from "wagmi"
@@ -45,11 +46,7 @@ function App() {
       <header className="header">
         <div className="header-content">
           <div className="logo">
-            <div className="logo-icon">W</div>
-            <div className="logo-text">
-              <span className="logo-main">web3auth</span>
-              <span className="logo-sub">by MetaMask</span>
-            </div>
+            <img src={diora} alt="Diora"/>
           </div>
           <div className="header-actions">
 
