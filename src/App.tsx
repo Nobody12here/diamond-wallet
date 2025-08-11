@@ -123,12 +123,8 @@ function App() {
     <div className="login-container">
       <div className="login-card">
         <div className="logo">
-          <div className="logo-icon">W</div>
-          <div className="logo-text">
-            <span className="logo-main">web3auth</span>
-            <span className="logo-sub">by MetaMask</span>
+            <img src={diora} alt="Diora"/>
           </div>
-        </div>
         {connectLoading ? (
           <div className="loading">Opening login modal...</div>
         ) : connectError ? (
