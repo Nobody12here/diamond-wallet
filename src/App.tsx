@@ -96,7 +96,7 @@ function App() {
               </div>
               <div className="service-actions">
                 <button onClick={() => showWalletUI()} className="service-btn">
-                  Open Wallet UI
+                  Show Wallet
                 </button>
                 {/* <button className="service-btn">Use Fiat Onramp</button>
                 <button className="service-btn">Connect to Applications</button>
