@@ -4,6 +4,7 @@ export function SwitchChain() {
   const chainId = useChainId()
   const { chains, switchChain, error } = useSwitchChain()
 
+  console.log(chains)
   return (
     <div>
       <h2>Switch Chain</h2>

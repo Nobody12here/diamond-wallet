@@ -1,12 +1,14 @@
 /* eslint-disable import/no-extraneous-dependencies */
 import react from "@vitejs/plugin-react";
 import tailwindcss from  "@tailwindcss/vite"
+import { nodePolyfills } from "vite-plugin-node-polyfills";
+import mkcert from "vite-plugin-mkcert";
 
 import { defineConfig } from "vite";
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  plugins: [react(),tailwindcss()],
+  plugins: [react(),tailwindcss(),mkcert(),nodePolyfills()],
   // alias are only to be added when absolutely necessary, these modules are already present in the browser environment
   // resolve: {
   // alias: {

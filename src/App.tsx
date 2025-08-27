@@ -10,6 +10,7 @@ import { Balance } from "./components/getBalance"
 import { SwitchChain } from "./components/switchNetwork"
 import { useWalletUI, useWeb3AuthUser } from "@web3auth/modal/react"
 import { Copy, Shield } from "lucide-react"
+import { EmbeddedWallet } from "@apillon/wallet-react";
 
 function App() {
   const { connect, isConnected, connectorName, loading: connectLoading, error: connectError } = useWeb3AuthConnect()
@@ -20,16 +21,16 @@ function App() {
   const [autoLoginTriggered, setAutoLoginTriggered] = useState(false)
   const [mfaEnabled, setMfaEnabled] = useState(false)
 
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      if (!isConnected && !connectLoading && !connectError && !autoLoginTriggered) {
-        connect()
-        setAutoLoginTriggered(true)
-      }
-    }, 1000)
+  // useEffect(() => {
+  //   const timer = setTimeout(() => {
+  //     if (!isConnected && !connectLoading && !connectError && !autoLoginTriggered) {
+  //       connect()
+  //       setAutoLoginTriggered(true)
+  //     }
+  //   }, 1000)
 
-    return () => clearTimeout(timer)
-  }, [isConnected, connectLoading, connectError, connect, autoLoginTriggered])
+  //   return () => clearTimeout(timer)
+  // }, [isConnected, connectLoading, connectError, connect, autoLoginTriggered])
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text)
@@ -46,7 +47,7 @@ function App() {
       <header className="header">
         <div className="header-content">
           <div className="logo">
-            <img src={diora} alt="Diora"/>
+            <img src={diora} alt="Diora" />
           </div>
           <div className="header-actions">
 
@@ -109,7 +110,7 @@ function App() {
           </div>
 
           {/* Hidden components for functionality */}
-          <div style={{ display: "none" }}>
+          <div style={{ display: "block" }}>
             <SendTransaction />
             <Balance />
             <SwitchChain />
@@ -123,24 +124,23 @@ function App() {
     <div className="login-container">
       <div className="login-card">
         <div className="logo">
-            <img src={diora} alt="Diora"/>
-          </div>
-        {connectLoading ? (
-          <div className="loading">Opening login modal...</div>
-        ) : connectError ? (
-          <div>
-            <div className="error">{connectError.message}</div>
-            <button onClick={() => connect()} className="login-btn">
-              Retry Login
-            </button>
-          </div>
-        ) : !autoLoginTriggered ? (
-          <div className="loading">Preparing login...</div>
-        ) : (
-          <button onClick={() => connect()} className="login-btn">
-            Login with Web3Auth
-          </button>
-        )}
+          <img src={diora} alt="Diora" />
+        </div>
+
+        <EmbeddedWallet
+          clientId={"YOUR INTEGRATION UUID HERE"}
+          defaultNetworkId={1287}
+          networks={[
+            {
+              name: "Moonbase Testnet",
+              id: 1287,
+              rpcUrl: "https://rpc.testnet.moonbeam.network",
+              explorerUrl: "https://moonbase.moonscan.io",
+            },
+            /* ... */
+          ]}
+        />
+
       </div>
     </div>
   )
