@@ -128,7 +128,7 @@ function App() {
         </div>
 
         <EmbeddedWallet
-          clientId={"YOUR INTEGRATION UUID HERE"}
+          clientId={import.meta.env.VITE_APOLIOS_KEY}
           defaultNetworkId={1287}
           networks={[
             {
