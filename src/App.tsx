@@ -20,7 +20,7 @@ function App() {
   const { userInfo } = useWeb3AuthUser()
   const [autoLoginTriggered, setAutoLoginTriggered] = useState(false)
   const [mfaEnabled, setMfaEnabled] = useState(false)
-
+  console.log(import.meta.env.VITE_APOLIOS_KEY)
   // useEffect(() => {
   //   const timer = setTimeout(() => {
   //     if (!isConnected && !connectLoading && !connectError && !autoLoginTriggered) {
@@ -128,7 +128,7 @@ function App() {
         </div>
 
         <EmbeddedWallet
-          clientId={process.env.VITE_APOLIOS_KEY ?? ""}
+          clientId={import.meta.env.VITE_APOLIOS_KEY}
           defaultNetworkId={1287}
           networks={[
             {
