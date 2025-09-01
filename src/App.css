@@ -134,7 +134,17 @@ h3 {
   gap: 1rem;
   justify-content: center;
 }
-
+#headlessui-dialog-panel-\:r1j\: > p.text-xs.px-8.text-center.pb-6 > a{
+  display: none !important;
+}
+#headlessui-dialog-panel-\:r1j\: > div.h-\[635px\].flex.flex-col.relative > div.bg-lightdark > div > div.w-\[80px\].flex.items-center.justify-end.gap-2.-mr-2.shrink-0 > button.oaw-button-plain.\!rounded-full.\!bg-deepdark.relative.w-8.h-8.shrink-0 > img{
+  display: none;
+}
+.oaw-btn-default-style{
+  border: solid 2px var(--gold-secondary) !important;
+  border-radius: 10px !important;
+  background-color: var(--gold-primary) !important;
+}
 .logo-icon {
   width: 80px;
   height: 80px;
