@@ -10,20 +10,24 @@ export const networks: Network[] = [
   {
     name: "Ethereum Mainnet",
     id: 1,
-    rpcUrl: "https://rpc.ankr.com/eth",
+    currencySymbol:"ETH",
+    imageUrl:"https://icons.llamao.fi/icons/chains/rsz_ethereum.jpg",
+    rpcUrl: "https://eth.llamarpc.com",
     explorerUrl: "https://etherscan.io",
   },
   {
     name: "BNB Smart Chain Mainnet",
     id: 56,
     currencySymbol: "BNB",
-    rpcUrl: "https://bsc-dataseed.binance.org/",
+    rpcUrl: "https://binance.llamarpc.com",
     explorerUrl: "https://bscscan.com",
+    imageUrl:"https://icons.llamao.fi/icons/chains/rsz_binance.jpg"
   },
   {
     name: "Polygon Mainnet",
     id: 137,
-    rpcUrl: "https://polygon-rpc.com",
+    currencySymbol:"POL",
+    rpcUrl: "https://polygon-mainnet.g.alchemy.com/v2/demo",
     explorerUrl: "https://polygonscan.com",
   },
   {
