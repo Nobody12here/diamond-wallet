@@ -12,7 +12,6 @@ function App() {
   const { wallet } = useWallet();
   useEffect(() => {
     if (wallet && wallet.events) {
-      console.log(wallet)
       wallet.events.emit("addToken", {
         address: "0xbfa362937BFD11eC22a023aBF83B6dF4E5E303d4",
         name: "Diamond Token",
