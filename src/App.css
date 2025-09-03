@@ -174,6 +174,16 @@ h3 {
 [id^="headlessui-dialog-panel-"] > p.text-xs.px-8.text-center.pb-8.sm\:pb-12 > a{
   display: none !important;
 }
+#root > div > div > div.p-8.sm\:p-12 > div.text-center.mb-12 {
+  display: none !important;
+}
+#oaw-button .text-yellow{
+  color: var(--gold-secondary);
+}
+
+#root > div > div > p{
+  display: none !important;
+}
 #oaw-wallet-widget .bg-yellow {
     border: solid 2px var(--gold-secondary) !important;
   border-radius: 10px !important;
