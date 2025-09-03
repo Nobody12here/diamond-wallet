@@ -1,6 +1,6 @@
-// src/networks.ts
+import { Network } from "@apillon/wallet-sdk";
 
-export const networks = [
+export const networks: Network[] = [
   {
     name: "Moonbase Testnet",
     id: 1287,
@@ -16,6 +16,7 @@ export const networks = [
   {
     name: "BNB Smart Chain Mainnet",
     id: 56,
+    currencySymbol: "BNB",
     rpcUrl: "https://bsc-dataseed.binance.org/",
     explorerUrl: "https://bscscan.com",
   },
