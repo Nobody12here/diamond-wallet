@@ -14,15 +14,22 @@ function App() {
     if (wallet && wallet.events) {
       console.log(wallet)
       wallet.events.emit("addToken", {
-        address: "0x55d398326f99059ff775485246999027b3197955",
-        name: "BUSDT",
-        symbol: "BUSDT",
+        address: "0xbfa362937BFD11eC22a023aBF83B6dF4E5E303d4",
+        name: "Diamond Token",
+        symbol: "DIT",
         decimals: 18,
-        imageUrl: "https://bscscan.com/token/images/busdt_32.png",
+        imageUrl: "",
         chainId: 56,
       });
+      wallet.events.emit('addTokenNft',{
+        address:"0xb525b921a4c87f3e5a751e8723FdDeaC8A887a48",
+        chainId:56,
+        name:"DCNFT",
+        imageUrl:"",
+        tokenId:1
+      })
     }
-  }, [wallet.events]);
+  }, [info]);
   return (
     <div className="App">
       <div className="login-container">
