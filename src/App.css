@@ -152,6 +152,9 @@ h3 {
   border-radius: 10px !important;
   background-color: var(--gold-primary) !important;
 }
+[id^="headlessui-dialog-panel-"] > p.text-darkgrey.text-\[10px\].absolute.bottom-1.right-1{
+  display: none;
+}
 [id^="headlessui-dialog-panel-"] > div.p-8.sm\:p-12 > div > svg {
   display: none !important;
 }

@@ -6,19 +6,31 @@ import { useWallet, useAccount } from "@apillon/wallet-react";
 import { EmbeddedWallet } from "@apillon/wallet-react";
 import { networks } from "./networks";
 import { useEffect, useState } from "react";
-
+import { getUserNFTTokenIds } from "./nftUtils"
+import { NFT_CONTRACT_ADDRESS } from "./constants";
 function App() {
   const { info } = useAccount();
   const { wallet } = useWallet();
   const [chainId, setChainId] = useState<string>("");
-
+  async function loadNFTs() {
+    const tokenIds:number[] = await getUserNFTTokenIds();
+    for(var i=0;i<tokenIds.length;i+=1){
+      wallet.events.emit("addTokenNft",{
+        address:NFT_CONTRACT_ADDRESS,
+        tokenId:tokenIds[i],
+        name:"DCNFP",
+        chainId:56
+      })
+    }
+   }
   useEffect(() => {
     if (wallet && wallet.events) {
       wallet.events.on("chainChanged", (chainId) => {
         setChainId(chainId.chainId);
       });
-      console.log("Chain id = ",chainId)
+      console.log("Chain id = ", chainId)
       if (chainId == "0x38") {
+        loadNFTs()
         wallet.events.emit("addToken", {
           address: "0xbfa362937BFD11eC22a023aBF83B6dF4E5E303d4",
           name: "Diamond Token",
@@ -27,13 +39,7 @@ function App() {
           imageUrl: "",
           chainId: 56,
         });
-        wallet.events.emit("addTokenNft", {
-          address: "0xb525b921a4c87f3e5a751e8723FdDeaC8A887a48",
-          chainId: 56,
-          name: "DCNFT",
-          imageUrl: "",
-          tokenId:1
-        });
+       
       }
     }
   }, [info, chainId]);
