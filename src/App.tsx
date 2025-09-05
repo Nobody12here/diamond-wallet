@@ -15,10 +15,10 @@ function App() {
   const { info } = useAccount();
   const { wallet } = useWallet();
   const [chainId, setChainId] = useState<string>("");
-  const signer = new EmbeddedEthersSigner();
-  const NFT_contract = new Contract(NFT_CONTRACT_ADDRESS, NFT_ABI, signer as any);
-  
   async function loadNFTs() {
+    const signer = new EmbeddedEthersSigner();
+    const NFT_contract = new Contract(NFT_CONTRACT_ADDRESS, NFT_ABI, signer as any);
+    
     const tokenIds:number[] = await getUserNFTTokenIds();
     for(var i=0;i<tokenIds.length;i+=1){
       const uri:string = await NFT_contract.tokenURI(tokenIds[i])
@@ -35,6 +35,7 @@ function App() {
   useEffect(() => {
     if (wallet && wallet.events) {
       wallet.events.on("chainChanged", (chainId) => {
+        console.log("Chain changed to =",chainId)
         setChainId(chainId.chainId);
       });
       console.log("Chain id = ", chainId)
