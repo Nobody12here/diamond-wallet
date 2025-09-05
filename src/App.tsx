@@ -14,7 +14,7 @@ import { Contract } from "ethers";
 function App() {
   const { info } = useAccount();
   const { wallet } = useWallet();
-  const [chainId, setChainId] = useState<string>("");
+  const [chainId, setChainId] = useState<string>("0x38");
   async function loadNFTs() {
     const signer = new EmbeddedEthersSigner();
     const NFT_contract = new Contract(NFT_CONTRACT_ADDRESS, NFT_ABI, signer as any);
@@ -35,7 +35,6 @@ function App() {
   useEffect(() => {
     if (wallet && wallet.events) {
       wallet.events.on("chainChanged", (chainId) => {
-        console.log("Chain changed to =",chainId)
         setChainId(chainId.chainId);
       });
       console.log("Chain id = ", chainId)
