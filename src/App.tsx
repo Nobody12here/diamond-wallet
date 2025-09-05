@@ -18,18 +18,25 @@ function App() {
   async function loadNFTs() {
     const signer = new EmbeddedEthersSigner();
     const NFT_contract = new Contract(NFT_CONTRACT_ADDRESS, NFT_ABI, signer as any);
-    
-    const tokenIds:number[] = await getUserNFTTokenIds();
-    for(var i=0;i<tokenIds.length;i+=1){
-      const uri:string = await NFT_contract.tokenURI(tokenIds[i])
-      const end = uri.split("//")[1].split("/")
-      console.log(end)
-      wallet.events.emit("addTokenNft",{
-        address:NFT_CONTRACT_ADDRESS,
-        tokenId:parseInt(tokenIds[i].toString()),
-        chainId:56,
-        imageUrl:`https://gateway.pinata.cloud/ipfs/${end[0]}/${end[1]}.png`
-      })
+
+    // Get the user's NFT token IDs
+    const tokenIds: number[] = await getUserNFTTokenIds();
+    for (const tokenId of tokenIds) {
+      // Fetch the token URI from the contract
+      const uri: string = await NFT_contract.tokenURI(tokenId);
+      const ipfsHash = uri.split('//')[1];
+      const metadataResp = await fetch(`https://gateway.pinata.cloud/ipfs/${ipfsHash}`);
+      const metadata = await metadataResp.json();
+      const imageHash = metadata.image.split('//')[1];
+      const imageUrl = `https://gateway.pinata.cloud/ipfs/${imageHash}`;
+      console.log(imageUrl);
+      console.log(metadataResp);
+      wallet.events.emit("addTokenNft", {
+        address: NFT_CONTRACT_ADDRESS,
+        tokenId: Number(tokenId),
+        chainId: 56,
+        imageUrl,
+      });
     }
    }
   useEffect(() => {
