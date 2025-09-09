@@ -27,7 +27,7 @@ export const networks: Network[] = [
     name: "Polygon Mainnet",
     id: 137,
     currencySymbol:"POL",
-    rpcUrl: "https://polygon-mainnet.g.alchemy.com/v2/demo",
+    rpcUrl: "https://rpc.poolz.finance/polygon",
     explorerUrl: "https://polygonscan.com",
   },
   {
