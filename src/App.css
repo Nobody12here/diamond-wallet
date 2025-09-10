@@ -169,8 +169,14 @@ h3 {
   background-position: center;
   margin: 0 auto;
 }
+[id^="headlessui-tabs-panel-"] > div > div > a > img {
+  object-fit: fill !important;
+}
+#oaw-wallet-widget .object-cover {
+  object-fit: fill !important;
+}
 [id^="headlessui-dialog-panel-"] > div.p-8.sm\:p-12 > form > button{
-    border: solid 2px var(--gold-secondary) !important;
+  border: solid 2px var(--gold-secondary) !important;
   border-radius: 10px !important;
   background-color: var(--gold-primary) !important;
 }
