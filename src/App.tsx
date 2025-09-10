@@ -29,8 +29,7 @@ function App() {
       const metadata = await metadataResp.json();
       const imageHash = metadata.image.split('//')[1];
       const imageUrl = `https://gateway.pinata.cloud/ipfs/${imageHash}`;
-      console.log(imageUrl);
-      console.log(metadataResp);
+
       wallet.events.emit("addTokenNft", {
         address: NFT_CONTRACT_ADDRESS,
         tokenId: Number(tokenId),
@@ -68,6 +67,7 @@ function App() {
           </div>
 
           <EmbeddedWallet
+          passkeyAuthMode="popup"
             clientId={import.meta.env.VITE_APOLIOS_KEY}
             defaultNetworkId={56}
             networks={networks}

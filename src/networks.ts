@@ -19,7 +19,7 @@ export const networks: Network[] = [
     name: "BNB Smart Chain Mainnet",
     id: 56,
     currencySymbol: "BNB",
-    rpcUrl: "https://binance.llamarpc.com",
+    rpcUrl: "https://bsc-rpc.publicnode.com",
     explorerUrl: "https://bscscan.com",
     imageUrl:"https://icons.llamao.fi/icons/chains/rsz_binance.jpg"
   },

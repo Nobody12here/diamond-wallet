@@ -5,7 +5,7 @@ import { EmbeddedEthersSigner } from "@apillon/wallet-sdk";
 
 
 export async function getUserNFTTokenIds(): Promise<number[]> {
-    const signer = new EmbeddedEthersSigner();
+    const signer  = new EmbeddedEthersSigner();
     const NFT_contract = new Contract(NFT_CONTRACT_ADDRESS, NFT_ABI, signer as any);
     
     const signerAddress = await signer.getAddress()
