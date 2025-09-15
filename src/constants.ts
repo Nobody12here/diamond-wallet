@@ -19,6 +19,14 @@ export const TOKENS_LIST:token = [
     imageUrl: "",
   },
   {
+    address: "0x2791bca1f2de4661ed88a30c99a7a9449aa84174",
+    name: "USDC.e (Polygon)",
+    symbol: "USDC.e",
+    decimals: 6,
+    chainId: 137, // Polygon
+    imageUrl: "",
+  },
+  {
     address: "0xdAC17F958D2ee523a2206206994597C13D831ec7",
     name: "USDT (ERC20)",
     symbol: "USDT",

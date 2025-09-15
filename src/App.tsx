@@ -4,7 +4,8 @@ import "./App.css";
 import diora from "./assets/diora.png";
 import { EmbeddedWallet as EmbeddedWalletType } from "@apillon/wallet-sdk";
 import { EmbeddedEthersSigner } from "@apillon/wallet-sdk";
-
+import { SwapWidget } from "@uniswap/widgets";
+import { TOKEN_LIST } from "./tokenList";
 import { useWallet, useAccount } from "@apillon/wallet-react";
 import { EmbeddedWallet } from "@apillon/wallet-react";
 import { networks } from "./networks";
@@ -34,7 +35,7 @@ function App() {
       NFT_ABI,
       signer as any
     );
-    
+
     // Get the user's NFT token IDs
     const tokenIds: number[] = await getUserNFTTokenIds();
     for (const tokenId of tokenIds) {
@@ -62,7 +63,7 @@ function App() {
         setChainId(chainIdObj.chainId);
       });
       // Convert chainId to decimal if it's a hex string
-      let currentChainId:any = chainId;
+      let currentChainId: any = chainId;
       if (typeof chainId === "string" && chainId.startsWith("0x")) {
         currentChainId = parseInt(chainId, 16);
       }
