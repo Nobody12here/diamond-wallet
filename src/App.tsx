@@ -18,19 +18,17 @@ import { networks } from "./networks";
 import { useAccount as useAccountWagmi } from "wagmi";
 function App() {
   const { info, getBalance } = useAccount();
-  const {connect} = useConnect();
+  const { connect } = useConnect();
   const { address, chain } = useAccountWagmi();
   console.log("wagmi address = ", address, " wagmi chain = ", chain)
   const { wallet } = useWallet();
   const [chainId, setChainId] = useState<string>("0x38");
-  const [showWalletModal, setShowWalletModal] = useState<boolean>(true);
+  const [showWalletModal, setShowWalletModal] = useState<boolean>(false);
   const [showSwapModal, setShowSwapModal] = useState<boolean>(false);
   const isConnected = !!(info as any)?.address || !!(info as any)?.accountAddress || !!wallet;
-
   // Derived connection data
   const [account, setAccount] = useState<string | null>(null);
   const [nativeBalance, setNativeBalance] = useState<string | null>(null);
-  const [connectedChainName, setConnectedChainName] = useState<string | null>(null);
 
   useEffect(() => {
     let mounted = true;
@@ -39,20 +37,7 @@ function App() {
         // Address
         const addr = (info as any)?.activeWallet?.address || (info as any)?.address || null;
         if (!mounted) return;
-        setAccount(addr);
-
-        // ChainId -> name
-        const rawChainId: any = (info as any)?.activeWallet?.chainId ?? chainId;
-        let numId: number | null = null;
-        if (typeof rawChainId === 'number') numId = rawChainId;
-        else if (typeof rawChainId === 'string') {
-          numId = rawChainId.startsWith('0x') ? parseInt(rawChainId, 16) : parseInt(rawChainId, 10);
-        }
-        if (numId != null) {
-          const net = (networks as any[]).find(n => n.id === numId);
-          setConnectedChainName(net?.name || `Chain ${numId}`);
-        }
-
+        setAccount(addr)
         // Balance
         const bal: any = await getBalance();
         if (!mounted) return;
@@ -93,19 +78,32 @@ function App() {
       });
     }
   }
-  const widgetConfig: any = useMemo(() => {
+  // Normalize chainId (can be hex string like "0x38", decimal string like "56", or number)
+  const allowedChainId = useMemo(() => {
+    if (typeof chainId === 'number') return chainId;
+    if (typeof chainId === 'string') {
+      if (chainId.startsWith('0x')) return parseInt(chainId, 16);
+      const n = Number(chainId);
+      return Number.isFinite(n) ? n : 56; // fallback to BNB (56)
+    }
+    return 56;
+  }, [chainId]);
+  console.log("Chain id = " ,chainId,allowedChainId)
+  const widgetConfig: WidgetConfig = useMemo(() => {
     return {
       apiKey: (import.meta as any).env?.LIFI_API_KEY,
       integrator: "Opensea",
-
+      chains: {
+        allow: [allowedChainId],
+      },
       theme: {
         container: {
           border: '1px solid rgb(234, 234, 234)',
           borderRadius: '16px',
         },
       },
-    };
-  }, []);
+    } as WidgetConfig;
+  }, [allowedChainId]);
   async function loadNFTs() {
     const signer = new EmbeddedEthersSigner();
     const NFT_contract = new Contract(
@@ -135,16 +133,12 @@ function App() {
       });
     }
   }
-  useEffect(() => {
-    //@ts-ignore
-    window.Browser = {
-      T: (msg: string) => { msg }
-    }
-  }, [])
+
   useEffect(() => {
     if (wallet && wallet.events) {
       wallet.events.on("chainChanged", (chainIdObj) => {
-        connect({connector:apillonConnector()})
+        connect({ connector: apillonConnector() })
+        console.log("chain changed ",chainIdObj.chainId)
         setChainId(chainIdObj.chainId);
       });
       // Convert chainId to decimal if it's a hex string
@@ -172,71 +166,42 @@ function App() {
   const walletRootRef = (globalThis as any)._apillonWalletRootRef || { current: null };
   (globalThis as any)._apillonWalletRootRef = walletRootRef; // persist across re-renders
 
-  function handleOpenWalletClick() {
-    // If modal is hidden, show it first
-    setShowWalletModal(true);
-    // next tick: click inner open button
-    setTimeout(() => {
-      try {
-        const root: HTMLElement | null = walletRootRef.current || document.body;
-        // Look for a stable button inside the widget that opens the wallet UI
-        const btn = root?.querySelector(
-          '.oaw-button, button.oaw-btn-default-style, button:where([data-testid="open-wallet"],[aria-label="Open wallet"])'
-        ) as HTMLButtonElement | null;
-        btn?.click();
-      } catch { }
-    }, 50);
-  }
+
   return (
     <div className="App">
       {/* Action area shown after user connects */}
-      {isConnected && !showWalletModal && !showSwapModal && (
+      {!showWalletModal && !showSwapModal && (
         <div className="actions-container">
-          <h2 className="actions-title">Diamond Wallet</h2>
+          <div className="actions-header">
+            <div className="logo">
+              <img src={diora} alt="Diora" />
+            </div>
+            <h2 className="actions-title">DIORA Wallet</h2>
+          </div>
           <p className="actions-subtitle">Manage your assets & swap seamlessly</p>
 
           {/* Connected summary */}
           <div className="connected-summary">
-            <div className="pill"><span className="dot" /> {connectedChainName || '—'}</div>
-            <div className="pill">Balance: {nativeBalance ?? '—'}</div>
-            <div className="pill">{shortAddr(account)}</div>
+            {isConnected ? (
+              <>
+                <div className="pill">Balance: {nativeBalance ?? '—'}</div>
+                <div className="pill">{shortAddr(account)}</div>
+              </>
+            ) : (
+              <div className="pill">Wallet not connected</div>
+            )}
           </div>
 
           <div className="actions-buttons">
-            <button className="gold-btn" onClick={() => handleOpenWalletClick()}>Open Wallet</button>
-            <button className="gold-btn secondary" onClick={() => setShowSwapModal(true)}>Swap Assets</button>
-          </div>
-        </div>
-      )}
-
-      {/* Wallet Modal (shown initially for sign in) */}
-      {(showWalletModal || !isConnected) && (
-        <div className="modal-overlay">
-          <div className="modal-box">
-            <div className="modal-header">
-              <h3>{isConnected ? 'Your Wallet' : 'Connect Your Wallet'}</h3>
-              {isConnected && (
-                <button className="close-btn" onClick={() => setShowWalletModal(false)} aria-label="Close Wallet">×</button>
-              )}
-            </div>
-            <div className="modal-body">
-              <div className="logo">
-                <img src={diora} alt="Diora" />
-              </div>
-              <div ref={(el) => (walletRootRef.current = el)}>
-                <EmbeddedWallet
-                  passkeyAuthMode="popup"
-                  clientId={import.meta.env.VITE_APOLIOS_KEY}
-                  defaultNetworkId={56}
-                  networks={networks}
-                />
-              </div>
-            </div>
-            {isConnected && (
-              <div className="modal-footer">
-                <button className="gold-btn full" onClick={() => setShowWalletModal(false)}>Close</button>
-              </div>
-            )}
+            <div ref={(el) => (walletRootRef.current = el)}>
+              <EmbeddedWallet
+                passkeyAuthMode="popup"
+                clientId={import.meta.env.VITE_APOLIOS_KEY}
+                defaultNetworkId={56}
+                networks={networks}
+              />
+            </div>            
+            <button className="gold-btn secondary" onClick={() => (isConnected ? setShowSwapModal(true) : setShowWalletModal(true))}>Swap Assets</button>
           </div>
         </div>
       )}
@@ -250,7 +215,8 @@ function App() {
               <button className="close-btn" onClick={() => setShowSwapModal(false)} aria-label="Close Swap">×</button>
             </div>
 
-            <LiFiWidget integrator="Diamond Wallet" config={widgetConfig} />
+            {/* Key forces remount so the widget picks up updated chain allow-list */}
+            <LiFiWidget key={`lifi-${allowedChainId}`} integrator="Diamond Wallet" config={widgetConfig} />
 
           </div>
         </div>
