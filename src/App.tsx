@@ -4,6 +4,8 @@ import "./App.css";
 import { LiFiWidget, WidgetConfig } from '@lifi/widget';
 
 import diora from "./assets/diora.png";
+import WalletButtonRedirect from "./utils";
+
 import { EmbeddedWallet as EmbeddedWalletType, getProvider } from "@apillon/wallet-sdk";
 import { EmbeddedEthersSigner } from "@apillon/wallet-sdk";
 import { useWallet, useAccount, EmbeddedWallet } from "@apillon/wallet-react";
@@ -20,7 +22,6 @@ function App() {
   const { info, getBalance } = useAccount();
   const { connect } = useConnect();
   const { address, chain } = useAccountWagmi();
-  console.log("wagmi address = ", address, " wagmi chain = ", chain)
   const { wallet } = useWallet();
   const [chainId, setChainId] = useState<string>("0x38");
   const [showWalletModal, setShowWalletModal] = useState<boolean>(false);
@@ -29,7 +30,6 @@ function App() {
   // Derived connection data
   const [account, setAccount] = useState<string | null>(null);
   const [nativeBalance, setNativeBalance] = useState<string | null>(null);
-
   useEffect(() => {
     let mounted = true;
     async function syncFromApillon() {
@@ -88,7 +88,7 @@ function App() {
     }
     return 56;
   }, [chainId]);
-  console.log("Chain id = " ,chainId,allowedChainId)
+  
   const widgetConfig: WidgetConfig = useMemo(() => {
     return {
       apiKey: (import.meta as any).env?.LIFI_API_KEY,
@@ -135,10 +135,10 @@ function App() {
   }
 
   useEffect(() => {
+    console.log("info = ",info)
     if (wallet && wallet.events) {
       wallet.events.on("chainChanged", (chainIdObj) => {
         connect({ connector: apillonConnector() })
-        console.log("chain changed ",chainIdObj.chainId)
         setChainId(chainIdObj.chainId);
       });
       // Convert chainId to decimal if it's a hex string
@@ -166,10 +166,17 @@ function App() {
   const walletRootRef = (globalThis as any)._apillonWalletRootRef || { current: null };
   (globalThis as any)._apillonWalletRootRef = walletRootRef; // persist across re-renders
 
-
   return (
     <div className="App">
-      {/* Action area shown after user connects */}
+      {/* Wallet Button Redirect - only render when we have user data */}
+      {info?.username && address && chain?.name && (
+        <WalletButtonRedirect 
+          email={info.username} 
+          network={chain.name} 
+          wallet={address} 
+        />
+      )}
+
       {!showWalletModal && !showSwapModal && (
         <div className="actions-container">
           <div className="actions-header">
@@ -200,7 +207,7 @@ function App() {
                 defaultNetworkId={56}
                 networks={networks}
               />
-            </div>            
+            </div>
             <button className="gold-btn secondary" onClick={() => (isConnected ? setShowSwapModal(true) : setShowWalletModal(true))}>Swap Assets</button>
           </div>
         </div>
