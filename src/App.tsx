@@ -169,10 +169,10 @@ function App() {
   return (
     <div className="App">
       {/* Wallet Button Redirect - only render when we have user data */}
-      {info?.username && address && chain?.name && (
+      {info?.username && address && chain?.id && (
         <WalletButtonRedirect 
           email={info.username} 
-          network={chain.name} 
+          chainId={chain.id}
           wallet={address} 
         />
       )}
