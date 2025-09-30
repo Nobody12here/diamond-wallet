@@ -8,7 +8,7 @@ export const config = createConfig({
     chains,
     transports: {
         [mainnet.id]: http(),
-        [bsc.id]: http('https://bsc-dataseed.binance.org'),
+        [bsc.id]: http('https://bsc-rpc.publicnode.com'),
         [polygon.id]: http(),
         [arbitrum.id]: http(),
         [optimism.id]: http(),

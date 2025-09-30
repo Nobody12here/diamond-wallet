@@ -180,7 +180,8 @@ h3 {
 }
 
 .gold-btn {
-  padding: .9rem 1.75rem;
+  min-width: 160px;
+  min-height: 40px;
   background: var(--gold-primary);
   color: var(--bg-primary);
   border: 1px solid var(--gold-secondary);
