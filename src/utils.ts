@@ -10,8 +10,18 @@ function getNetworkSymbol(chainId: number): string {
     42161: "arb",    // Arbitrum One
     10: "op",        // Optimism
     43114: "avax",   // Avalanche C-Chain
-    250: "ftm",      // Fantom
-    1440000: "xrp",  // XRPL EVM (from your networks.ts)
+    8453: "base",    // Base Mainnet
+    250: "ftm",      // Fantom Opera
+    1329: "sei",     // Sei Network
+    25: "cro",       // Cronos Mainnet
+    1284: "glmr",    // Moonbeam
+    42220: "celo",   // Celo Mainnet
+    100: "xdai",     // Gnosis Chain
+    5000: "mnt",     // Mantle Network
+    59144: "linea",  // Linea Mainnet
+    534352: "scroll", // Scroll Mainnet
+    81457: "blast",  // Blast Mainnet
+    1440000: "xrp",  // XRPL EVM
     // Add more chains as needed
   };
   
