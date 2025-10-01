@@ -173,7 +173,8 @@ function App() {
         <WalletButtonRedirect 
           email={info.username} 
           chainId={chain.id}
-          wallet={address} 
+          wallet={address}
+          onOpenSwapModal={() => setShowSwapModal(true)}
         />
       )}
 
