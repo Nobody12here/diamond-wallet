@@ -1,12 +1,15 @@
 "use client";
 
 import "./App.css";
-import { LiFiWidget, WidgetConfig } from '@lifi/widget';
+import { ChainId, LiFiWidget, WidgetConfig } from "@lifi/widget";
 
 import diora from "./assets/diora.png";
 import WalletButtonRedirect from "./utils";
 
-import { EmbeddedWallet as EmbeddedWalletType, getProvider } from "@apillon/wallet-sdk";
+import {
+  EmbeddedWallet as EmbeddedWalletType,
+  getProvider,
+} from "@apillon/wallet-sdk";
 import { EmbeddedEthersSigner } from "@apillon/wallet-sdk";
 import { useWallet, useAccount, EmbeddedWallet } from "@apillon/wallet-react";
 import { ethers } from "ethers";
@@ -26,7 +29,8 @@ function App() {
   const [chainId, setChainId] = useState<string>("0x38");
   const [showWalletModal, setShowWalletModal] = useState<boolean>(false);
   const [showSwapModal, setShowSwapModal] = useState<boolean>(false);
-  const isConnected = !!(info as any)?.address || !!(info as any)?.accountAddress || !!wallet;
+  const isConnected =
+    !!(info as any)?.address || !!(info as any)?.accountAddress || !!wallet;
   // Derived connection data
   const [account, setAccount] = useState<string | null>(null);
   const [nativeBalance, setNativeBalance] = useState<string | null>(null);
@@ -35,21 +39,33 @@ function App() {
     async function syncFromApillon() {
       try {
         // Address
-        const addr = (info as any)?.activeWallet?.address || (info as any)?.address || null;
+        const addr =
+          (info as any)?.activeWallet?.address ||
+          (info as any)?.address ||
+          null;
         if (!mounted) return;
-        setAccount(addr)
+        setAccount(addr);
         // Balance
         const bal: any = await getBalance();
         if (!mounted) return;
         let display: string | null = null;
         if (bal == null) display = null;
-        else if (typeof bal === 'string' || typeof bal === 'number') display = String(bal);
-        else if (typeof bal === 'object') {
+        else if (typeof bal === "string" || typeof bal === "number")
+          display = String(bal);
+        else if (typeof bal === "object") {
           if (bal.formatted) display = String(bal.formatted);
-          else if (bal.native?.formatted) display = String(bal.native.formatted);
+          else if (bal.native?.formatted)
+            display = String(bal.native.formatted);
           else if (bal.value) {
-            const v = typeof bal.value === 'string' ? bal.value : (bal.value.toString?.() ?? bal.value);
-            try { display = ethers.utils.formatEther(v); } catch { display = String(v); }
+            const v =
+              typeof bal.value === "string"
+                ? bal.value
+                : bal.value.toString?.() ?? bal.value;
+            try {
+              display = ethers.utils.formatEther(v);
+            } catch {
+              display = String(v);
+            }
           } else if (bal.balance) display = String(bal.balance);
         }
         if (display != null) {
@@ -61,7 +77,9 @@ function App() {
       }
     }
     syncFromApillon();
-    return () => { mounted = false; };
+    return () => {
+      mounted = false;
+    };
   }, [info, chainId, getBalance]);
 
   function shortAddr(addr?: string | null) {
@@ -69,7 +87,11 @@ function App() {
     return addr.slice(0, 6) + "..." + addr.slice(-4);
   }
 
-  function addTokensToWallet(wallet: EmbeddedWalletType, tokens: token, currentChainId: number) {
+  function addTokensToWallet(
+    wallet: EmbeddedWalletType,
+    tokens: token,
+    currentChainId: number
+  ) {
     if (wallet && wallet.events) {
       tokens.forEach((token) => {
         if (token.chainId === currentChainId) {
@@ -80,26 +102,36 @@ function App() {
   }
   // Normalize chainId (can be hex string like "0x38", decimal string like "56", or number)
   const allowedChainId = useMemo(() => {
-    if (typeof chainId === 'number') return chainId;
-    if (typeof chainId === 'string') {
-      if (chainId.startsWith('0x')) return parseInt(chainId, 16);
+    if (typeof chainId === "number") return chainId;
+    if (typeof chainId === "string") {
+      if (chainId.startsWith("0x")) return parseInt(chainId, 16);
       const n = Number(chainId);
       return Number.isFinite(n) ? n : 56; // fallback to BNB (56)
     }
     return 56;
   }, [chainId]);
-  
+
   const widgetConfig: WidgetConfig = useMemo(() => {
     return {
+      feeConfig: {
+        fee: 0.002,
+        showFeePercentage: true,
+        showFeeTooltip: true,
+      },
+      sdkConfig: {
+        [ChainId.BSC]: [
+          "https://rpc.ankr.com/bsc/b514077bb69be5a261cfd59758bf7ef18c4c1edb7391f5d5ef8cec61323eab80",
+        ],
+      },
       apiKey: (import.meta as any).env?.LIFI_API_KEY,
-      integrator: "Opensea",
+      integrator: "DiamondWallet",
       chains: {
         allow: [allowedChainId],
       },
       theme: {
         container: {
-          border: '1px solid rgb(234, 234, 234)',
-          borderRadius: '16px',
+          border: "1px solid rgb(234, 234, 234)",
+          borderRadius: "16px",
         },
       },
     } as WidgetConfig;
@@ -135,10 +167,10 @@ function App() {
   }
 
   useEffect(() => {
-    console.log("info = ",info)
+    console.log("info = ", info);
     if (wallet && wallet.events) {
+      connect({ connector: apillonConnector() });
       wallet.events.on("chainChanged", (chainIdObj) => {
-        connect({ connector: apillonConnector() })
         setChainId(chainIdObj.chainId);
       });
       // Convert chainId to decimal if it's a hex string
@@ -163,15 +195,17 @@ function App() {
     }
   }, [info, chainId, wallet]);
   // One-click Open Wallet: trigger internal button
-  const walletRootRef = (globalThis as any)._apillonWalletRootRef || { current: null };
+  const walletRootRef = (globalThis as any)._apillonWalletRootRef || {
+    current: null,
+  };
   (globalThis as any)._apillonWalletRootRef = walletRootRef; // persist across re-renders
 
   return (
     <div className="App">
       {/* Wallet Button Redirect - only render when we have user data */}
       {info?.username && address && chain?.id && (
-        <WalletButtonRedirect 
-          email={info.username} 
+        <WalletButtonRedirect
+          email={info.username}
           chainId={chain.id}
           wallet={address}
           onOpenSwapModal={() => setShowSwapModal(true)}
@@ -186,13 +220,15 @@ function App() {
             </div>
             <h2 className="actions-title">DIORA Wallet</h2>
           </div>
-          <p className="actions-subtitle">Manage your assets & swap seamlessly</p>
+          <p className="actions-subtitle">
+            Manage your assets & swap seamlessly
+          </p>
 
           {/* Connected summary */}
           <div className="connected-summary">
             {isConnected ? (
               <>
-                <div className="pill">Balance: {nativeBalance ?? '—'}</div>
+                <div className="pill">Balance: {nativeBalance ?? "—"}</div>
                 <div className="pill">{shortAddr(account)}</div>
               </>
             ) : (
@@ -209,7 +245,14 @@ function App() {
                 networks={networks}
               />
             </div>
-            <button className="gold-btn secondary" onClick={() => (isConnected ? setShowSwapModal(true) : setShowWalletModal(true))}>Swap Assets</button>
+            <button
+              className="gold-btn secondary"
+              onClick={() =>
+                isConnected ? setShowSwapModal(true) : setShowWalletModal(true)
+              }
+            >
+              Swap Assets
+            </button>
           </div>
         </div>
       )}
@@ -220,12 +263,21 @@ function App() {
           <div className="modal-box large">
             <div className="modal-header">
               <h3>Swap Assets</h3>
-              <button className="close-btn" onClick={() => setShowSwapModal(false)} aria-label="Close Swap">×</button>
+              <button
+                className="close-btn"
+                onClick={() => setShowSwapModal(false)}
+                aria-label="Close Swap"
+              >
+                ×
+              </button>
             </div>
 
             {/* Key forces remount so the widget picks up updated chain allow-list */}
-            <LiFiWidget key={`lifi-${allowedChainId}`} integrator="Diamond Wallet" config={widgetConfig} />
-
+            <LiFiWidget
+              key={`lifi-${allowedChainId}`}
+              integrator="Diamond Wallet"
+              config={widgetConfig}
+            />
           </div>
         </div>
       )}
