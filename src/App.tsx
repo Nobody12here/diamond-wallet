@@ -209,7 +209,7 @@ function App() {
     let trackedButton: HTMLButtonElement | null = null;
 
     const handleWalletButtonClick = () => {
-      setShowWalletModal(!showWalletModal);
+      setShowWalletModal(true);
     };
 
     const attachListener = () => {
