@@ -200,6 +200,44 @@ function App() {
   };
   (globalThis as any)._apillonWalletRootRef = walletRootRef; // persist across re-renders
 
+  useEffect(() => {
+  if (typeof document === "undefined") return;
+
+  const target = document.body;
+  if (!target) return;
+
+    let trackedButton: HTMLButtonElement | null = null;
+
+    const handleWalletButtonClick = () => {
+      setShowWalletModal(!showWalletModal);
+    };
+
+    const attachListener = () => {
+      const button = document.querySelector<HTMLButtonElement>(
+        ".oaw-wallet-widget-btn"
+      );
+
+      if (button && button !== trackedButton) {
+        trackedButton?.removeEventListener("click", handleWalletButtonClick);
+        trackedButton = button;
+        trackedButton.addEventListener("click", handleWalletButtonClick);
+      }
+    };
+
+    attachListener();
+
+    const observer = new MutationObserver(attachListener);
+    observer.observe(target, {
+      childList: true,
+      subtree: true,
+    });
+
+    return () => {
+      observer.disconnect();
+      trackedButton?.removeEventListener("click", handleWalletButtonClick);
+    };
+  }, [setShowWalletModal]);
+
   return (
     <div className="App">
       {/* Wallet Button Redirect - only render when we have user data */}
@@ -208,6 +246,7 @@ function App() {
           email={info.username}
           chainId={chain.id}
           wallet={address}
+          walletOpen={showWalletModal}
           onOpenSwapModal={() => setShowSwapModal(true)}
         />
       )}
@@ -243,6 +282,7 @@ function App() {
                 clientId={import.meta.env.VITE_APOLIOS_KEY}
                 defaultNetworkId={56}
                 networks={networks}
+
               />
             </div>
             <button

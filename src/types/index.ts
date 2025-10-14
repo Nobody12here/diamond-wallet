@@ -3,5 +3,6 @@ export interface WalletButtonRedirectProps {
     email: string,
     wallet: Address | "",
     chainId: number,
+    walletOpen:boolean,
     onOpenSwapModal?: () => void,
 }

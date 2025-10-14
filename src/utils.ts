@@ -30,100 +30,125 @@ function getNetworkSymbol(chainId: number): string {
 
 function WalletButtonRedirect(props: WalletButtonRedirectProps) {
     useEffect(() => {
-        // Don't start observing if we don't have the required data yet
         if (!props.email || !props.wallet || !props.chainId) {
             return;
         }
 
         const networkSymbol = getNetworkSymbol(props.chainId);
 
-        let isAttached = false;
-        const observer = new MutationObserver(() => {
-            // Find the button by text content
-            const buttons = Array.from(document.querySelectorAll("button"));
-            const buyBtn = buttons.find((btn) =>
-                btn.textContent?.trim() === "Buy"
-            );
+            const swapButtons = new Set<HTMLButtonElement>();
+            const buyButtons = new Set<HTMLButtonElement>();
 
-            if (buyBtn && !isAttached) {
-                // Handle the existing Buy button
-                if (buyBtn.disabled) {
-                    buyBtn.removeAttribute("disabled");
-                    buyBtn.classList.remove("opacity-60", "grayscale");
+            const handleBuyClick = (event: Event) => {
+                event.preventDefault();
+                event.stopPropagation();
+                window.location.href = `https://pay.incoin.ai/diora?email=${props.email}&wallet=${props.wallet}&network=${networkSymbol}`;
+        };
+
+            const handleSwapClick = (event: Event) => {
+                event.preventDefault();
+                event.stopPropagation();
+            const closeWalletModal = () => {
+                const closeButtons = Array.from(document.querySelectorAll("button"));
+                const walletCloseBtn = closeButtons.find((btn) =>
+                    btn.textContent?.trim() === "×" ||
+                    btn.getAttribute("aria-label")?.toLowerCase().includes("close") ||
+                    btn.innerHTML?.includes("×") ||
+                    btn.classList.contains("close") ||
+                    btn.querySelector("svg")?.innerHTML?.includes("path")
+                );
+
+                if (walletCloseBtn) {
+                    walletCloseBtn.click();
+                } else {
+                    document.dispatchEvent(
+                        new KeyboardEvent("keydown", {
+                            key: "Escape",
+                            code: "Escape",
+                            keyCode: 27,
+                            which: 27,
+                            bubbles: true,
+                        })
+                    );
                 }
-                
-                // Remove any existing click handlers to avoid duplicates
-                const newBuyBtn = buyBtn.cloneNode(true) as HTMLButtonElement;
-                buyBtn.parentNode?.replaceChild(newBuyBtn, buyBtn);
-                
-                newBuyBtn.addEventListener("click", () => {
-                    window.location.href = `https://pay.incoin.ai/diora?email=${props.email}&wallet=${props.wallet}&network=${networkSymbol}`;
-                });
+            };
 
-                // Create and add the new button beside the Buy button
-                const swapBtn = document.createElement("button");
-                swapBtn.textContent = "Swap";
-                
-                // Copy all classes from the Buy button to maintain consistent styling
-                swapBtn.className = newBuyBtn.className;
-                
-                // Add custom styling if needed (optional)
-                swapBtn.style.marginLeft = "2px"; // Add some spacing between buttons
-                
-                // Add click handler for the Swap button
-                swapBtn.addEventListener("click", () => {
-                    // First, try to close the wallet modal
-                    const closeWalletModal = () => {
-                        // Method 1: Look for close button (X) in the wallet modal
-                        const closeButtons = Array.from(document.querySelectorAll("button"));
-                        const walletCloseBtn = closeButtons.find((btn) => 
-                            btn.textContent?.trim() === "×" || 
-                            btn.getAttribute("aria-label")?.includes("close") ||
-                            btn.innerHTML?.includes("×") ||
-                            btn.classList.contains("close") ||
-                            btn.querySelector("svg")?.innerHTML?.includes("path") // SVG close icons
-                        );
-                        
-                        if (walletCloseBtn) {
-                            walletCloseBtn.click();
-                        } else {
-                            // Method 2: Press Escape key to close modal
-                            document.dispatchEvent(new KeyboardEvent('keydown', {
-                                key: 'Escape',
-                                code: 'Escape',
-                                keyCode: 27,
-                                which: 27,
-                                bubbles: true
-                            }));
-                        }
-                    };
+            closeWalletModal();
+            setTimeout(() => {
+                props.onOpenSwapModal?.();
+            }, 100);
+        };
 
-                    // Close wallet modal first
-                    closeWalletModal();
-                    
-                    // Then open swap modal with a small delay to ensure wallet modal is closed
-                    setTimeout(() => {
-                        if (props.onOpenSwapModal) {
-                            props.onOpenSwapModal();
-                        }
-                    }, 100);
-                });
+        const ensureButtons = () => {
+            const buttons = Array.from(document.querySelectorAll<HTMLButtonElement>("button"));
+            const buyBtn = buttons.find((btn) => btn.textContent?.trim() === "Buy");
 
-                // Insert the Swap button right after the Buy button
-                newBuyBtn.parentNode?.insertBefore(swapBtn, newBuyBtn.nextSibling);
-                
-                isAttached = true;
-                observer.disconnect(); // stop observing once attached
+            if (!buyBtn) {
+                return;
             }
-        });
 
+            if (buyBtn.disabled) {
+                buyBtn.removeAttribute("disabled");
+                buyBtn.classList.remove("opacity-60", "grayscale");
+            }
+
+            if (!buyButtons.has(buyBtn)) {
+                buyBtn.addEventListener("click", handleBuyClick);
+                buyButtons.add(buyBtn);
+            }
+
+            const parent = buyBtn.parentElement;
+            if (!parent) {
+                return;
+            }
+
+                    const straySwapButtons = Array.from(parent.querySelectorAll<HTMLButtonElement>("button"));
+                    straySwapButtons.forEach((btn) => {
+                        if (btn === buyBtn) return;
+                        if (btn.dataset.dwSwapBtn === "true") return;
+                        if (btn.textContent?.trim() === "Swap") {
+                            btn.remove();
+                        }
+                    });
+
+            const existingSwapButtons = parent.querySelectorAll<HTMLButtonElement>("button[data-dw-swap-btn]");
+            existingSwapButtons.forEach((btn, index) => {
+                if (index === 0) {
+                    if (!swapButtons.has(btn)) {
+                        btn.addEventListener("click", handleSwapClick);
+                        swapButtons.add(btn);
+                    }
+                    return;
+                }
+                btn.remove();
+            });
+
+            if (existingSwapButtons.length === 0) {
+                const swapBtn = document.createElement("button");
+                swapBtn.type = "button";
+                swapBtn.textContent = "Swap";
+                swapBtn.dataset.dwSwapBtn = "true";
+                swapBtn.className = buyBtn.className;
+                swapBtn.style.marginLeft = "2px";
+                        swapBtn.addEventListener("click", handleSwapClick);
+                swapButtons.add(swapBtn);
+                parent.insertBefore(swapBtn, buyBtn.nextSibling);
+            }
+        };
+
+        ensureButtons();
+
+        const observer = new MutationObserver(ensureButtons);
         observer.observe(document.body, { childList: true, subtree: true });
 
         return () => {
             observer.disconnect();
-            isAttached = false;
+            buyButtons.forEach((btn) => btn.removeEventListener("click", handleBuyClick));
+            swapButtons.forEach((btn) => btn.removeEventListener("click", handleSwapClick));
+            swapButtons.clear();
+            buyButtons.clear();
         };
-    }, [props.email, props.wallet, props.chainId, props.onOpenSwapModal]); // Re-run when any prop changes
+    }, [props.email, props.wallet, props.chainId, props.walletOpen, props.onOpenSwapModal]);
 
     return null;
 }
