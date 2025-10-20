@@ -49,29 +49,46 @@ function WalletButtonRedirect(props: WalletButtonRedirectProps) {
             event.stopPropagation();
 
             const closeWalletModal = () => {
-                const closeButtons = Array.from(document.querySelectorAll("button"));
-                const walletCloseBtn = closeButtons.find((btn) =>
-                    btn.textContent?.trim() === "×" ||
-                    btn.getAttribute("aria-label")?.toLowerCase().includes("close") ||
-                    btn.innerHTML?.includes("×") ||
-                    btn.classList.contains("close") ||
-                    btn.querySelector("svg")?.innerHTML?.includes("path")
+            // Check if wallet is in iframe - use different approach
+            const walletIframe = document.querySelector('iframe[id*="walletIframe"]') as HTMLIFrameElement;
+            if (walletIframe) {
+                // For iframe mode, try to hide/remove the iframe or dispatch escape
+                walletIframe.style.display = 'none';
+                document.dispatchEvent(
+                    new KeyboardEvent("keydown", {
+                        key: "Escape",
+                        code: "Escape",
+                        keyCode: 27,
+                        which: 27,
+                        bubbles: true,
+                    })
                 );
+                return;
+            }
 
-                if (walletCloseBtn) {
-                    walletCloseBtn.click();
-                } else {
-                    document.dispatchEvent(
-                        new KeyboardEvent("keydown", {
-                            key: "Escape",
-                            code: "Escape",
-                            keyCode: 27,
-                            which: 27,
-                            bubbles: true,
-                        })
-                    );
-                }
-            };
+            const closeButtons = Array.from(document.querySelectorAll("button"));
+            const walletCloseBtn = closeButtons.find((btn) =>
+                btn.textContent?.trim() === "×" ||
+                btn.getAttribute("aria-label")?.toLowerCase().includes("close") ||
+                btn.innerHTML?.includes("×") ||
+                btn.classList.contains("close") ||
+                btn.querySelector("svg")?.innerHTML?.includes("path")
+            );
+
+            if (walletCloseBtn) {
+                walletCloseBtn.click();
+            } else {
+                document.dispatchEvent(
+                    new KeyboardEvent("keydown", {
+                        key: "Escape",
+                        code: "Escape",
+                        keyCode: 27,
+                        which: 27,
+                        bubbles: true,
+                    })
+                );
+            }
+        };
 
             closeWalletModal();
             setTimeout(() => {
@@ -80,6 +97,13 @@ function WalletButtonRedirect(props: WalletButtonRedirectProps) {
         };
 
         const ensureButtons = () => {
+            // Check if we're trying to access content inside an iframe
+            const walletIframe = document.querySelector('iframe[id*="walletIframe"]') as HTMLIFrameElement;
+            if (walletIframe) {
+                console.log('Wallet is in iframe mode - skipping DOM manipulation to avoid CORS issues');
+                return;
+            }
+
             const buttons = Array.from(
                 document.querySelectorAll<HTMLButtonElement>("button")
             );
