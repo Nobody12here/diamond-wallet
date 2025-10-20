@@ -1,18 +1,26 @@
 import { FormEvent } from "react";
-import { useWaitForTransactionReceipt, useSendTransaction, BaseError } from "wagmi";
+import { useWaitForTransactionReceipt, useSendTransaction, useChains, BaseError } from "wagmi";
+import { getAccount, getChainId, sendTransaction } from '@wagmi/core'
 import { Hex, parseEther } from "viem";
 
 export function SendTransaction() {
   const { data: hash, error, isPending, sendTransaction } = useSendTransaction()
+  const chains = useChains();
 
-  async function submit(e: FormEvent<HTMLFormElement>) {
+  function submit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault()
     const formData = new FormData(e.target as HTMLFormElement)
     const to = formData.get('address') as Hex
     const value = formData.get('value') as string
-    sendTransaction({ to, value: parseEther(value) })
+    try {
+      sendTransaction({ to, value: parseEther(value), gas: 31000n })
+    }
+    catch {
+      console.error(error)
+    }
   }
-
+  console.log("Error = ", error)
+  console.log(chains)
   const { isLoading: isConfirming, isSuccess: isConfirmed } =
     useWaitForTransactionReceipt({
       hash,
@@ -38,7 +46,7 @@ export function SendTransaction() {
       {isConfirming && 'Waiting for confirmation...'}
       {isConfirmed && 'Transaction confirmed.'}
       {error && (
-        <div>Error: {(error as BaseError).shortMessage || error.message}</div>
+        <div>Error: {error.message}</div>
       )}
     </div>
   )

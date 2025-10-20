@@ -21,6 +21,7 @@ import { useConnect } from "wagmi";
 import { apillonConnector } from "./ApilionConnector";
 import { networks } from "./networks";
 import { useAccount as useAccountWagmi } from "wagmi";
+import { SendTransaction } from "./components/sendTransaction";
 function App() {
   const { info, getBalance } = useAccount();
   const { connect } = useConnect();
@@ -201,10 +202,10 @@ function App() {
   (globalThis as any)._apillonWalletRootRef = walletRootRef; // persist across re-renders
 
   useEffect(() => {
-  if (typeof document === "undefined") return;
+    if (typeof document === "undefined") return;
 
-  const target = document.body;
-  if (!target) return;
+    const target = document.body;
+    if (!target) return;
 
     let trackedButton: HTMLButtonElement | null = null;
 
@@ -250,7 +251,7 @@ function App() {
           onOpenSwapModal={() => setShowSwapModal(true)}
         />
       )}
-
+      <SendTransaction></SendTransaction>
       {!showWalletModal && !showSwapModal && (
         <div className="actions-container">
           <div className="actions-header">
