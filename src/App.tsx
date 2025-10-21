@@ -191,7 +191,6 @@ function App() {
           onOpenSwapModal={() => setShowSwapModal(true)}
         />
       )}
-      <SendTransaction></SendTransaction>
       {!showWalletModal && !showSwapModal && (
         <div className="actions-container">
           <WalletHeader />
