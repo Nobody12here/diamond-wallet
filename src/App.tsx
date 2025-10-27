@@ -1,24 +1,26 @@
 "use client";
 
 import "./App.css";
-import { ChainId, WidgetConfig } from "@lifi/widget";
+import { ChainId, LiFiWidget, WidgetConfig } from "@lifi/widget";
 
+import diora from "./assets/diora.png";
 import WalletButtonRedirect from "./utils";
 
-import { EmbeddedWallet as EmbeddedWalletType } from "@apillon/wallet-sdk";
-import { useWallet, useAccount } from "@apillon/wallet-react";
+import {
+  EmbeddedWallet as EmbeddedWalletType,
+  getProvider,
+} from "@apillon/wallet-sdk";
+import { EmbeddedEthersSigner } from "@apillon/wallet-sdk";
+import { useWallet, useAccount, EmbeddedWallet } from "@apillon/wallet-react";
 import { ethers } from "ethers";
 import { useEffect, useMemo, useState } from "react";
-import { TOKENS_LIST } from "./constants";
+import { getUserNFTTokenIds } from "./nftUtils";
+import { NFT_ABI, NFT_CONTRACT_ADDRESS, TOKENS_LIST, token } from "./constants";
+import { Contract } from "ethers";
 import { useConnect } from "wagmi";
 import { apillonConnector } from "./ApilionConnector";
+import { networks } from "./networks";
 import { useAccount as useAccountWagmi } from "wagmi";
-import { WalletHeader } from "./components/WalletHeader";
-import { ConnectedSummary } from "./components/ConnectedSummary";
-import { WalletEmbed } from "./components/WalletEmbed";
-import { SwapModal } from "./components/SwapModal";
-import { addTokensToWallet, loadNFTs } from "./lib/tokenManager";
-import { useAllowedChainId } from "./hooks/useAllowedChainId";
 function App() {
   const { info, getBalance } = useAccount();
   const { connect } = useConnect();
@@ -80,8 +82,35 @@ function App() {
     };
   }, [info, chainId, getBalance]);
 
-  const allowedChainId = useAllowedChainId(chainId, 56);
-  console.log("LIFI key = ", import.meta.env.VITE_LIFI_API_KEY);
+  function shortAddr(addr?: string | null) {
+    if (!addr) return "";
+    return addr.slice(0, 6) + "..." + addr.slice(-4);
+  }
+
+  function addTokensToWallet(
+    wallet: EmbeddedWalletType,
+    tokens: token,
+    currentChainId: number
+  ) {
+    if (wallet && wallet.events) {
+      tokens.forEach((token) => {
+        if (token.chainId === currentChainId) {
+          wallet.events.emit("addToken", token);
+        }
+      });
+    }
+  }
+  // Normalize chainId (can be hex string like "0x38", decimal string like "56", or number)
+  const allowedChainId = useMemo(() => {
+    if (typeof chainId === "number") return chainId;
+    if (typeof chainId === "string") {
+      if (chainId.startsWith("0x")) return parseInt(chainId, 16);
+      const n = Number(chainId);
+      return Number.isFinite(n) ? n : 56; // fallback to BNB (56)
+    }
+    return 56;
+  }, [chainId]);
+
   const widgetConfig: WidgetConfig = useMemo(() => {
     return {
       feeConfig: {
@@ -90,9 +119,11 @@ function App() {
         showFeeTooltip: true,
       },
       sdkConfig: {
-        [ChainId.BSC]: ["https://bsc-rpc.publicnode.com/"],
+        [ChainId.BSC]: [
+          "https://rpc.ankr.com/bsc/b514077bb69be5a261cfd59758bf7ef18c4c1edb7391f5d5ef8cec61323eab80",
+        ],
       },
-      apiKey: import.meta.env.VITE_LIFI_API_KEY,
+      apiKey: (import.meta as any).env?.LIFI_API_KEY,
       integrator: "DiamondWallet",
       chains: {
         allow: [allowedChainId],
@@ -105,7 +136,35 @@ function App() {
       },
     } as WidgetConfig;
   }, [allowedChainId]);
-  // loadNFTs moved to lib/tokenManager
+  async function loadNFTs() {
+    const signer = new EmbeddedEthersSigner();
+    const NFT_contract = new Contract(
+      NFT_CONTRACT_ADDRESS,
+      NFT_ABI,
+      signer as any
+    );
+
+    // Get the user's NFT token IDs
+    const tokenIds: number[] = await getUserNFTTokenIds();
+    for (const tokenId of tokenIds) {
+      // Fetch the token URI from the contract
+      const uri: string = await NFT_contract.tokenURI(tokenId);
+      const ipfsHash = uri.split("//")[1];
+      const metadataResp = await fetch(
+        `https://gateway.pinata.cloud/ipfs/${ipfsHash}`
+      );
+      const metadata = await metadataResp.json();
+      const imageHash = metadata.image.split("//")[1];
+      const imageUrl = `https://gateway.pinata.cloud/ipfs/${imageHash}`;
+
+      wallet.events.emit("addTokenNft", {
+        address: NFT_CONTRACT_ADDRESS,
+        tokenId: Number(tokenId),
+        chainId: 56,
+        imageUrl,
+      });
+    }
+  }
 
   useEffect(() => {
     console.log("info = ", info);
@@ -119,11 +178,11 @@ function App() {
       if (typeof chainId === "string" && chainId.startsWith("0x")) {
         currentChainId = parseInt(chainId, 16);
       }
-      addTokensToWallet(wallet, TOKENS_LIST, currentChainId as number);
+      addTokensToWallet(wallet, TOKENS_LIST, currentChainId);
 
       // Only load NFTs if on BNB chain
       if (currentChainId === 56) {
-        loadNFTs(wallet as any);
+        loadNFTs();
         wallet.events.emit("addToken", {
           address: "0xbfa362937BFD11eC22a023aBF83B6dF4E5E303d4",
           name: "Diamond Token",
@@ -142,15 +201,15 @@ function App() {
   (globalThis as any)._apillonWalletRootRef = walletRootRef; // persist across re-renders
 
   useEffect(() => {
-    if (typeof document === "undefined") return;
+  if (typeof document === "undefined") return;
 
-    const target = document.body;
-    if (!target) return;
+  const target = document.body;
+  if (!target) return;
 
     let trackedButton: HTMLButtonElement | null = null;
 
     const handleWalletButtonClick = () => {
-      setShowWalletModal(!showWalletModal);
+      setShowWalletModal(true);
     };
 
     const attachListener = () => {
@@ -191,22 +250,41 @@ function App() {
           onOpenSwapModal={() => setShowSwapModal(true)}
         />
       )}
+
       {!showWalletModal && !showSwapModal && (
         <div className="actions-container">
-          <WalletHeader />
+          <div className="actions-header">
+            <div className="logo">
+              <img src={diora} alt="Diora" />
+            </div>
+            <h2 className="actions-title">DIORA Wallet</h2>
+          </div>
           <p className="actions-subtitle">
             Manage your assets & swap seamlessly
           </p>
 
           {/* Connected summary */}
-          <ConnectedSummary balance={nativeBalance} address={account} />
+          <div className="connected-summary">
+            {isConnected ? (
+              <>
+                <div className="pill">Balance: {nativeBalance ?? "—"}</div>
+                <div className="pill">{shortAddr(account)}</div>
+              </>
+            ) : (
+              <div className="pill">Wallet not connected</div>
+            )}
+          </div>
 
           <div className="actions-buttons">
-            <WalletEmbed
-              containerRef={(el) => (walletRootRef.current = el)}
-              clientId={import.meta.env.VITE_APOLIOS_KEY}
-              defaultNetworkId={56}
-            />
+            <div ref={(el) => (walletRootRef.current = el)}>
+              <EmbeddedWallet
+                passkeyAuthMode="popup"
+                clientId={import.meta.env.VITE_APOLIOS_KEY}
+                defaultNetworkId={56}
+                networks={networks}
+
+              />
+            </div>
             <button
               className="gold-btn secondary"
               onClick={() =>
@@ -219,12 +297,30 @@ function App() {
         </div>
       )}
 
-      <SwapModal
-        open={!!(isConnected && showSwapModal)}
-        onClose={() => setShowSwapModal(false)}
-        allowedChainId={allowedChainId}
-        widgetConfig={widgetConfig}
-      />
+      {/* Swap Widget Modal */}
+      {isConnected && showSwapModal && (
+        <div className="modal-overlay">
+          <div className="modal-box large">
+            <div className="modal-header">
+              <h3>Swap Assets</h3>
+              <button
+                className="close-btn"
+                onClick={() => setShowSwapModal(false)}
+                aria-label="Close Swap"
+              >
+                ×
+              </button>
+            </div>
+
+            {/* Key forces remount so the widget picks up updated chain allow-list */}
+            <LiFiWidget
+              key={`lifi-${allowedChainId}`}
+              integrator="Diamond Wallet"
+              config={widgetConfig}
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 }

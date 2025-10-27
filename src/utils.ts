@@ -35,60 +35,43 @@ function WalletButtonRedirect(props: WalletButtonRedirectProps) {
         }
 
         const networkSymbol = getNetworkSymbol(props.chainId);
+        const swapButtons = new Set<HTMLButtonElement>();
+        const buyButtons = new Set<HTMLButtonElement>();
 
-            const swapButtons = new Set<HTMLButtonElement>();
-            const buyButtons = new Set<HTMLButtonElement>();
-
-            const handleBuyClick = (event: Event) => {
-                event.preventDefault();
-                event.stopPropagation();
-                window.location.href = `https://pay.incoin.ai/diora?email=${props.email}&wallet=${props.wallet}&network=${networkSymbol}`;
+        const handleBuyClick = (event: Event) => {
+            event.preventDefault();
+            event.stopPropagation();
+            window.location.href = `https://pay.incoin.ai/diora?email=${props.email}&wallet=${props.wallet}&network=${networkSymbol}`;
         };
 
-            const handleSwapClick = (event: Event) => {
-                event.preventDefault();
-                event.stopPropagation();
+        const handleSwapClick = (event: Event) => {
+            event.preventDefault();
+            event.stopPropagation();
+
             const closeWalletModal = () => {
-            // Check if wallet is in iframe - use different approach
-            const walletIframe = document.querySelector('iframe[id*="walletIframe"]') as HTMLIFrameElement;
-            if (walletIframe) {
-                // For iframe mode, try to hide/remove the iframe or dispatch escape
-                walletIframe.style.display = 'none';
-                document.dispatchEvent(
-                    new KeyboardEvent("keydown", {
-                        key: "Escape",
-                        code: "Escape",
-                        keyCode: 27,
-                        which: 27,
-                        bubbles: true,
-                    })
+                const closeButtons = Array.from(document.querySelectorAll("button"));
+                const walletCloseBtn = closeButtons.find((btn) =>
+                    btn.textContent?.trim() === "×" ||
+                    btn.getAttribute("aria-label")?.toLowerCase().includes("close") ||
+                    btn.innerHTML?.includes("×") ||
+                    btn.classList.contains("close") ||
+                    btn.querySelector("svg")?.innerHTML?.includes("path")
                 );
-                return;
-            }
 
-            const closeButtons = Array.from(document.querySelectorAll("button"));
-            const walletCloseBtn = closeButtons.find((btn) =>
-                btn.textContent?.trim() === "×" ||
-                btn.getAttribute("aria-label")?.toLowerCase().includes("close") ||
-                btn.innerHTML?.includes("×") ||
-                btn.classList.contains("close") ||
-                btn.querySelector("svg")?.innerHTML?.includes("path")
-            );
-
-            if (walletCloseBtn) {
-                walletCloseBtn.click();
-            } else {
-                document.dispatchEvent(
-                    new KeyboardEvent("keydown", {
-                        key: "Escape",
-                        code: "Escape",
-                        keyCode: 27,
-                        which: 27,
-                        bubbles: true,
-                    })
-                );
-            }
-        };
+                if (walletCloseBtn) {
+                    walletCloseBtn.click();
+                } else {
+                    document.dispatchEvent(
+                        new KeyboardEvent("keydown", {
+                            key: "Escape",
+                            code: "Escape",
+                            keyCode: 27,
+                            which: 27,
+                            bubbles: true,
+                        })
+                    );
+                }
+            };
 
             closeWalletModal();
             setTimeout(() => {
@@ -97,11 +80,21 @@ function WalletButtonRedirect(props: WalletButtonRedirectProps) {
         };
 
         const ensureButtons = () => {
-            const buttons = Array.from(document.querySelectorAll<HTMLButtonElement>("button"));
-            const buyBtn = buttons.find((btn) => btn.textContent?.trim() === "Buy");
+            const buttons = Array.from(
+                document.querySelectorAll<HTMLButtonElement>("button")
+            );
+            const buyCandidate = buttons.find(
+                (btn) => btn.textContent?.trim() === "Buy"
+            );
 
-            if (!buyBtn) {
+            if (!buyCandidate) {
                 return;
+            }
+
+            let buyBtn = buyCandidate;
+
+            if (!buyCandidate.dataset.dwBuyBtn) {
+                buyCandidate.dataset.dwBuyBtn = "true";
             }
 
             if (buyBtn.disabled) {
@@ -110,47 +103,85 @@ function WalletButtonRedirect(props: WalletButtonRedirectProps) {
             }
 
             if (!buyButtons.has(buyBtn)) {
-                buyBtn.addEventListener("click", handleBuyClick);
+                buyBtn.addEventListener("click", handleBuyClick, { once: false });
                 buyButtons.add(buyBtn);
             }
 
-            const parent = buyBtn.parentElement;
+            const parent = buyBtn.parentElement as HTMLElement | null;
             if (!parent) {
                 return;
             }
 
-                    const straySwapButtons = Array.from(parent.querySelectorAll<HTMLButtonElement>("button"));
-                    straySwapButtons.forEach((btn) => {
-                        if (btn === buyBtn) return;
-                        if (btn.dataset.dwSwapBtn === "true") return;
-                        if (btn.textContent?.trim() === "Swap") {
-                            btn.remove();
-                        }
-                    });
-
-            const existingSwapButtons = parent.querySelectorAll<HTMLButtonElement>("button[data-dw-swap-btn]");
-            existingSwapButtons.forEach((btn, index) => {
-                if (index === 0) {
-                    if (!swapButtons.has(btn)) {
-                        btn.addEventListener("click", handleSwapClick);
-                        swapButtons.add(btn);
-                    }
-                    return;
+            if (!parent.dataset.dwLayoutAdjusted) {
+                const computed = window.getComputedStyle(parent);
+                if (computed.display === "grid") {
+                    parent.style.gridTemplateColumns = "repeat(auto-fit, minmax(0, 1fr))";
+                    parent.style.columnGap = computed.columnGap || "8px";
+                    parent.style.rowGap = computed.rowGap || "8px";
+                } else if (computed.display === "flex") {
+                    parent.style.flexWrap = "wrap";
+                    parent.style.gap = computed.gap || "8px";
+                    parent.style.justifyContent = computed.justifyContent || "center";
                 }
-                btn.remove();
-            });
-
-            if (existingSwapButtons.length === 0) {
-                const swapBtn = document.createElement("button");
-                swapBtn.type = "button";
-                swapBtn.textContent = "Swap";
-                swapBtn.dataset.dwSwapBtn = "true";
-                swapBtn.className = buyBtn.className;
-                swapBtn.style.marginLeft = "2px";
-                        swapBtn.addEventListener("click", handleSwapClick);
-                swapButtons.add(swapBtn);
-                parent.insertBefore(swapBtn, buyBtn.nextSibling);
+                parent.dataset.dwLayoutAdjusted = "true";
             }
+
+            Array.from(parent.querySelectorAll<HTMLButtonElement>("button")).forEach(
+                (btn) => {
+                    if (btn === buyBtn) return;
+                    if (btn.dataset.dwSwapBtn === "true") return;
+                    if (btn.textContent?.trim() === "Swap") {
+                        btn.remove();
+                    }
+                }
+            );
+
+            let swapBtn = parent.querySelector<HTMLButtonElement>(
+                'button[data-dw-swap-btn="true"]'
+            );
+
+                    if (!swapBtn) {
+                        swapBtn = buyBtn.cloneNode(true) as HTMLButtonElement;
+                        swapBtn.dataset.dwSwapBtn = "true";
+                        swapBtn.removeAttribute("disabled");
+                        swapBtn.setAttribute("aria-label", "Swap");
+                        const labelElement = swapBtn.querySelector<HTMLElement>("span, strong");
+                        if (labelElement) {
+                            labelElement.textContent = "Swap";
+                        } else {
+                            swapBtn.textContent = "Swap";
+                        }
+                        parent.insertBefore(swapBtn, buyBtn.nextSibling);
+                    }
+
+                    if (swapBtn) {
+                        const parentComputed = window.getComputedStyle(parent);
+                        const buyComputed = window.getComputedStyle(buyBtn);
+
+                        swapBtn.style.marginLeft = buyComputed.marginLeft;
+                        swapBtn.style.marginRight = buyComputed.marginRight;
+                        swapBtn.style.marginTop = buyComputed.marginTop;
+                        swapBtn.style.marginBottom = buyComputed.marginBottom;
+
+                        if (parentComputed.display === "grid") {
+                            swapBtn.style.gridColumn = "1 / -1";
+                            swapBtn.style.width = "100%";
+                            swapBtn.style.justifySelf = "stretch";
+                        } else if (parentComputed.display === "flex") {
+                            swapBtn.style.flexBasis = "100%";
+                            swapBtn.style.flexGrow = "1";
+                            swapBtn.style.maxWidth = "100%";
+                            swapBtn.style.width = "100%";
+                            swapBtn.style.alignSelf = "stretch";
+                        } else {
+                            swapBtn.style.width = "100%";
+                        }
+                    }
+
+                    if (swapBtn && !swapButtons.has(swapBtn)) {
+                        swapBtn.addEventListener("click", handleSwapClick);
+                        swapButtons.add(swapBtn);
+                    }
         };
 
         ensureButtons();
@@ -160,8 +191,12 @@ function WalletButtonRedirect(props: WalletButtonRedirectProps) {
 
         return () => {
             observer.disconnect();
-            buyButtons.forEach((btn) => btn.removeEventListener("click", handleBuyClick));
-            swapButtons.forEach((btn) => btn.removeEventListener("click", handleSwapClick));
+            buyButtons.forEach((btn) =>
+                btn.removeEventListener("click", handleBuyClick)
+            );
+            swapButtons.forEach((btn) =>
+                btn.removeEventListener("click", handleSwapClick)
+            );
             swapButtons.clear();
             buyButtons.clear();
         };
