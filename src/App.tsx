@@ -21,6 +21,7 @@ import { useConnect } from "wagmi";
 import { apillonConnector } from "./ApilionConnector";
 import { networks } from "./networks";
 import { useAccount as useAccountWagmi } from "wagmi";
+import { getLifiWalletManagement } from "./lib/lifiWalletManagement";
 function App() {
   const { info, getBalance } = useAccount();
   const { connect } = useConnect();
@@ -128,6 +129,8 @@ function App() {
       chains: {
         allow: [allowedChainId],
       },
+      // Force LiFi Widget to use Apillon embedded wallet for signing & sending
+      walletManagement: getLifiWalletManagement() as any,
       theme: {
         container: {
           border: "1px solid rgb(234, 234, 234)",
